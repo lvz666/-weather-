@@ -1,0 +1,10 @@
+[
+  {
+    "barkServer": "服务器地址",
+    "barkKey": "Bark Key",
+    "cityCode": "城市代码",
+    "cityName": "城市",
+    "sound": "铃声",
+    "iconUrl": "推送图标"
+  }
+]
