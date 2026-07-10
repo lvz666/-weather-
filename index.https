@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>气象灾害预警 Bark 订阅系统 Pro</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&display=swap');
+    body {
+      font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #030712;
+    }
+    /* 霓虹流光背景 */
+    .glow-bg-1 {
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
+    }
+    .glow-bg-2 {
+      background: radial-gradient(circle, rgba(244, 63, 94, 0.1) 0%, rgba(0, 0, 0, 0) 70%);
+    }
+  </style>
+</head>
+<body class="text-slate-100 min-h-screen relative overflow-x-hidden">
+
+  <!-- 炫彩极光背景层 -->
+  <div class="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] glow-bg-1 rounded-full filter blur-[80px] pointer-events-none z-0"></div>
+  <div class="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] glow-bg-2 rounded-full filter blur-[80px] pointer-events-none z-0"></div>
+
+  <div class="max-w-6xl mx-auto px-4 py-8 relative z-10">
+    
+    <!-- 顶部高科技标题栏 -->
+    <header class="text-center mb-10">
+      <div class="inline-flex items-center justify-center p-3.5 bg-indigo-500/10 border border-indigo-500/20 backdrop-blur-md rounded-3xl text-indigo-400 mb-4 shadow-lg shadow-indigo-500/5">
+        <i data-lucide="shield-alert" class="w-9 h-9 animate-pulse"></i>
+      </div>
+      <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-100 to-indigo-200">
+        气象灾害预警实时接收终端
+      </h1>
+      <p class="mt-2.5 text-sm sm:text-base text-slate-400 max-w-2xl mx-auto">
+        高精度云端气象轮询引擎。通过 Bark 自建网络，为您的 iOS 终端实现地震级毫秒推送响应。
+      </p>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      
+      <!-- 左侧：高斯模糊订阅配置表单 -->
+      <main class="lg:col-span-5 space-y-6">
+        <div class="backdrop-blur-xl bg-slate-900/60 border border-white/10 rounded-3xl shadow-2xl p-6 sm:p-8">
+          <h2 class="text-lg font-bold text-white mb-6 flex items-center gap-2.5">
+            <span class="p-1.5 bg-blue-500/10 rounded-lg border border-blue-500/20 text-blue-400">
+              <i data-lucide="sliders" class="w-5 h-5"></i>
+            </span>
+            接收参数配置
+          </h2>
+          
+          <form id="subscribeForm" class="space-y-5">
+            <!-- Bark 推送服务器地址 -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Bark 服务器地址 <span class="text-rose-500">*</span></label>
+              <input type="url" id="barkServer" required value="https://bark.saevio.top" placeholder="如: https://bark.saevio.top" 
+                class="w-full px-4 py-3 bg-slate-950/50 border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/70 transition text-sm font-mono text-indigo-300">
+            </div>
+
+            <!-- Bark 密钥 -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Bark 推送密钥 (KEY) <span class="text-rose-500">*</span></label>
+              <input type="text" id="barkKey" required value="3fTwK768reti4S6bP5yjKY" placeholder="您的专属推送秘钥" 
+                class="w-full px-4 py-3 bg-slate-950/50 border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/70 transition text-sm font-mono text-indigo-300">
+            </div>
+
+            <!-- 选择监控城市 -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">轮询城市设置 <span class="text-rose-500">*</span></label>
+              <select id="cityCode" class="w-full px-4 py-3 bg-slate-950/50 border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/70 transition text-sm text-slate-200">
+                <option value="101270101" selected>成都 (101270101)</option>
+                <option value="101010100">北京 (101010100)</option>
+                <option value="101020100">上海 (101020100)</option>
+                <option value="101280101">广州 (101280101)</option>
+                <option value="101280601">深圳 (101280601)</option>
+                <option value="101210101">杭州 (101210101)</option>
+                <option value="101200101">武汉 (101200101)</option>
+              </select>
+            </div>
+
+            <!-- 自定义铃声 -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">预警蜂鸣声选择</label>
+              <select id="sound" class="w-full px-4 py-3 bg-slate-950/50 border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/70 transition text-sm text-slate-200">
+                <option value="alarm" selected>Alarm (高级防空警报蜂鸣)</option>
+                <option value="electronic">Electronic (高频电子间歇预警音)</option>
+                <option value="sherlock">Sherlock (夏洛克紧急旋律)</option>
+                <option value="minions">Minions (小黄人预警)</option>
+                <option value="bell">Bell (清脆铃声)</option>
+                <option value="none">无声静音</option>
+              </select>
+            </div>
+
+            <!-- 自定义图标 -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">预警推送图标链接 (URL)</label>
+              <input type="url" id="iconUrl" value="https://day.app/assets/images/avatar.jpg" placeholder="如: https://domain/icon.png" 
+                class="w-full px-4 py-3 bg-slate-950/50 border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/70 transition text-sm font-mono text-slate-300">
+            </div>
+
+            <!-- 保存按钮 -->
+            <button type="submit" class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-sm shadow-lg shadow-indigo-600/20 active:scale-[0.98] transition flex items-center justify-center gap-2">
+              <i data-lucide="check-circle" class="w-4 h-4"></i>保存后台实时监控
+            </button>
+          </form>
+        </div>
+
+        <!-- 运行状态信息看板 -->
+        <div class="backdrop-blur-xl bg-slate-900/60 border border-white/10 rounded-3xl p-6 space-y-3">
+          <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+            <i data-lucide="cpu" class="text-emerald-400 w-4.5 h-4.5"></i>
+            后端守护状态
+          </h3>
+          <div class="space-y-2 text-xs text-slate-300">
+            <div class="flex justify-between border-b border-white/5 pb-2">
+              <span>高精度刷新：</span>
+              <span class="text-emerald-400 font-medium">每 1.5 分钟轮询检测</span>
+            </div>
+            <div class="flex justify-between">
+              <span>我的活跃监听：</span>
+              <span class="text-indigo-400 font-medium" id="cacheStats">已加载 0 个城市监控</span>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- 右侧：地震系统风格：历史真实数据仿真测试 -->
+      <aside class="lg:col-span-7 space-y-6">
+        
+        <div class="backdrop-blur-xl bg-slate-900/60 border border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl">
+          
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div class="space-y-1">
+              <h2 class="text-lg font-bold text-white flex items-center gap-2.5">
+                <span class="p-1.5 bg-rose-500/10 rounded-lg border border-rose-500/20 text-rose-400">
+                  <i data-lucide="history" class="w-5 h-5"></i>
+                </span>
+                历史真实灾害推送测试
+              </h2>
+              <p class="text-xs text-slate-400">点击「用此测试」即可使用您配置的私有服务器进行超逼真的仿真推送演练。</p>
+            </div>
+          </div>
+
+          <!-- 搜索与筛选器 (完美还原震级筛选) -->
+          <div class="grid grid-cols-2 gap-4 mb-6">
+            <div>
+              <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">全部灾害来源</label>
+              <select id="filterType" onchange="filterAlerts()" class="w-full px-3.5 py-2.5 bg-slate-950/50 border border-white/10 rounded-xl focus:outline-none focus:border-indigo-500 transition text-xs text-slate-300">
+                <option value="all">全部类型 (ALL)</option>
+                <option value="tornado">龙卷风 / 强对流</option>
+                <option value="rain">暴雨 / 洪涝</option>
+                <option value="typhoon">超强台风</option>
+                <option value="cold">极寒 / 寒潮</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">预警危险评级</label>
+              <select id="filterLevel" onchange="filterAlerts()" class="w-full px-3.5 py-2.5 bg-slate-950/50 border border-white/10 rounded-xl focus:outline-none focus:border-indigo-500 transition text-xs text-slate-300">
+                <option value="all">全部严重级别</option>
+                <option value="critical">极度危险 (红色)</option>
+                <option value="severe">高度警惕 (橙色)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 灾害数据列表容器 -->
+          <div id="alertsList" class="space-y-4 max-h-[520px] overflow-y-auto pr-1">
+            <!-- 动态生成 -->
+          </div>
+
+        </div>
+
+        <!-- 当前服务实际订阅 -->
+        <div class="backdrop-blur-xl bg-slate-900/60 border border-white/10 rounded-3xl p-6">
+          <h3 class="text-sm font-bold text-white mb-4 flex items-center gap-2">
+            <i data-lucide="bell" class="text-indigo-400 w-4.5 h-4.5"></i>
+            当前本地挂载的常驻订阅群组 (<span id="subCount">0</span>)
+          </h3>
+          <div id="subList" class="space-y-3">
+            <div class="text-center py-6 text-slate-500 text-xs">暂无正在运行的配置</div>
+          </div>
+        </div>
+
+      </aside>
+
+    </div>
+  </div>
+
+  <!-- 轻量悬浮Toast提示 -->
+  <div id="toast" class="fixed bottom-5 right-5 transform translate-y-10 opacity-0 transition-all duration-300 px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-2 text-sm z-50">
+    <span id="toastMsg"></span>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    const toast = document.getElementById('toast');
+    const toastMsg = document.getElementById('toastMsg');
+    
+    // 💡 完整高度精细设计的历史强对流与重大气象灾害仿真数据集
+    const historicalAlerts = [
+      {
+        id: 'hubei_tornado_2026',
+        tag: 'CRITICAL',
+        type: 'tornado',
+        typeChinese: '龙卷风',
+        cityName: '湖北黄冈市龙感湖区',
+        time: '2026-07-10 14:05:41',
+        levelText: '极度危险 (红色预警)',
+        levelColor: 'rose',
+        sound: 'alarm',
+        title: '⚠️ 湖北省黄冈市发布龙卷风红色预警',
+        desc: '湖北省黄冈气象台发布龙卷风红色警报：预计未来2小时内，龙感湖及周边区域将受极强龙卷风袭击，局地阵风可达11-13级并伴有冰雹和极端雷暴大风。请立刻就地寻找避难所，切勿在简易棚或树下逗留！'
+      },
+      {
+        id: 'zhengzhou_rain_2021',
+        tag: 'RAIN',
+        type: 'rain',
+        typeChinese: '特大暴雨',
+        cityName: '河南省郑州市中原区',
+        time: '2021-07-20 16:30:00',
+        levelText: '极度危险 (特大红色预警)',
+        levelColor: 'rose',
+        sound: 'alarm',
+        title: '⚠️ 郑州市气象局下发特大暴雨红色预警',
+        desc: '郑州市防汛抗旱指挥部紧急发布：目前郑州小时降雨量突破 201.9 毫米。城区内涝严重，水位快速上涨。全市所有企事业单位及户外人员请停止办公并就地避险，禁止涉水穿行地下车库、隧道等低洼区域！'
+      },
+      {
+        id: 'typhoon_saola_2023',
+        tag: 'TYPHOON',
+        type: 'typhoon',
+        typeChinese: '超强台风',
+        cityName: '广东省深圳市大鹏新区',
+        time: '2023-09-01 18:25:56',
+        levelText: '极度危险 (超强台风红色)',
+        levelColor: 'rose',
+        sound: 'electronic',
+        title: '🌀 超强台风“苏拉”沿海红色预警信号',
+        desc: '深圳市防台指挥部下发通知：超强台风“苏拉”中心附近最大风力达 17 级（58米/秒），将在大鹏沿海正面登陆。全市已启动“五停”（停课、停工、停产、停运、停业）。严禁在阳台及户外摆放杂物，避开落地大玻璃及高处悬挂物。'
+      },
+      {
+        id: 'beijing_cold_2023',
+        tag: 'COLD',
+        type: 'cold',
+        typeChinese: '极端寒潮',
+        cityName: '北京市门头沟区',
+        time: '2023-12-15 07:44:13',
+        levelText: '高度警惕 (寒潮橙色预警)',
+        levelColor: 'amber',
+        sound: 'sherlock',
+        title: '❄️ 北京市气象台发布极端寒潮橙色预警',
+        desc: '北京市减灾委员会提示：受西伯利亚强冷空气持续侵入，未来三天北京市平原地区夜间最低气温将骤降至零下 18 摄氏度，山区降至零下 25 摄氏度。大风导致风寒效应极度显著，请加强水暖供电管网防冻保护并防寒保暖。'
+      },
+      {
+        id: 'sanya_convective_2024',
+        tag: 'CONVECTIVE',
+        type: 'tornado',
+        typeChinese: '强对流天气',
+        cityName: '海南省三亚市吉阳区',
+        time: '2024-04-18 11:59:31',
+        levelText: '高度警惕 (强对流橙色预警)',
+        levelColor: 'amber',
+        sound: 'bell',
+        title: '⛈️ 三亚市气象台强对流天气橙色警报',
+        desc: '海南省三亚气象局监控：吉阳、天涯等区域上空雷雨冰雹云团正快速成型。局部将伴随 10 级短时大风、重雷电及冰雹。海上船只及近岸作业人员请立即回港避风。'
+      }
+    ];
+
+    function showToast(msg, isSuccess) {
+      toastMsg.innerText = msg;
+      toast.classList.remove('translate-y-10', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+      if (isSuccess) {
+        toast.className = "fixed bottom-5 right-5 bg-indigo-600/90 border border-indigo-400/20 backdrop-blur-xl text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-2 text-sm z-50 transition-all duration-300";
+      } else {
+        toast.className = "fixed bottom-5 right-5 bg-rose-600/90 border border-rose-400/20 backdrop-blur-xl text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-2 text-sm z-50 transition-all duration-300";
+      }
+      setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-10', 'opacity-0');
+      }, 3500);
+    }
+
+    // 渲染历史预警数据列表
+    function renderAlerts(list) {
+      const container = document.getElementById('alertsList');
+      container.innerHTML = '';
+      
+      list.forEach(item => {
+        const borderGlow = item.levelColor === 'rose' ? 'border-rose-500/20 bg-rose-500/[0.02]' : 'border-amber-500/20 bg-amber-500/[0.02]';
+        const tagBg = item.levelColor === 'rose' ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+        
+        container.innerHTML += `
+          <div class="p-5 border ${borderGlow} rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:border-white/15 transition relative overflow-hidden group">
+            <div class="space-y-2 flex-1">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="px-2 py-0.5 text-[10px] font-extrabold border rounded-md tracking-wider ${tagBg}">${item.tag}</span>
+                <h3 class="text-sm font-bold text-white">${item.cityName}</h3>
+                <span class="text-[10px] text-slate-500 font-mono">${item.time}</span>
+              </div>
+              <div class="text-xs text-indigo-400 font-semibold flex items-center gap-1">
+                <span>级别参数：${item.levelText}</span>
+              </div>
+              <p class="text-xs text-slate-400 line-clamp-2 leading-relaxed group-hover:text-slate-300 transition">${item.desc}</p>
+            </div>
+            <button onclick="triggerSimulation('${item.id}')" class="px-4 py-2.5 bg-white/5 hover:bg-indigo-600 border border-white/10 hover:border-indigo-500 text-slate-300 hover:text-white font-medium rounded-xl text-xs active:scale-[0.96] transition flex items-center gap-1.5 self-end md:self-auto shadow-sm">
+              <i data-lucide="bell" class="w-3.5 h-3.5"></i>
+              用此测试
+            </button>
+          </div>
+        `;
+      });
+      lucide.createIcons();
+    }
+
+    // 筛选器逻辑
+    function filterAlerts() {
+      const type = document.getElementById('filterType').value;
+      const level = document.getElementById('filterLevel').value;
+      
+      let filtered = historicalAlerts;
+      
+      if (type !== 'all') {
+        filtered = filtered.filter(item => item.type === type);
+      }
+      
+      if (level !== 'all') {
+        if (level === 'critical') {
+          filtered = filtered.filter(item => item.levelColor === 'rose');
+        } else if (level === 'severe') {
+          filtered = filtered.filter(item => item.levelColor === 'amber');
+        }
+      }
+      
+      renderAlerts(filtered);
+    }
+
+    // 地震级推送模拟测试：通过您的私有服务器立即投递
+    async function triggerSimulation(id) {
+      const barkServer = document.getElementById('barkServer').value.trim();
+      const barkKey = document.getElementById('barkKey').value.trim();
+      
+      if (!barkKey || !barkServer) {
+        showToast('请输入有效的 Bark 服务器和 Key 再运行测试！', false);
+        return;
+      }
+
+      const alertItem = historicalAlerts.find(item => item.id === id);
+      if (!alertItem) return;
+
+      const soundQuery = `sound=${alertItem.sound}`;
+      const iconUrl = document.getElementById('iconUrl').value.trim();
+      const iconQuery = iconUrl ? `&icon=${encodeURIComponent(iconUrl)}` : '';
+      const cleanServer = barkServer.replace(/\/$/, '');
+      
+      // 用户自建服务器真实 URL 拼接规范
+      const targetUrl = `${cleanServer}/${barkKey}/${encodeURIComponent(alertItem.title)}/${encodeURIComponent(alertItem.desc)}?level=critical&${soundQuery}${iconQuery}`;
+
+      showToast(`正在向私有服务器下发【${alertItem.typeChinese}】极速测试信号...`, true);
+      
+      try {
+        await fetch(targetUrl, { mode: 'no-cors' });
+        showToast(`【${alertItem.typeChinese}预警】仿真推送已成功发出！请检查您的手机`, true);
+      } catch (err) {
+        // 自动降级为服务器中转测试
+        try {
+          const res = await fetch('/api/test-push', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              barkServer,
+              barkKey,
+              cityName: alertItem.cityName,
+              title: alertItem.title,
+              sound: alertItem.sound,
+              iconUrl,
+              desc: alertItem.desc
+            })
+          });
+          const ret = await res.json();
+          if (ret.code === 1) {
+            showToast(`云中转测试：【${alertItem.typeChinese}】模拟下发成功！`, true);
+          } else {
+            showToast('下发失败，请检查私有服务器连接状态', false);
+          }
+        } catch (serverErr) {
+          showToast('私有推送服务器响应超时', false);
+        }
+      }
+    }
+
+    // 订阅列表管理
+    async function loadSubscriptions() {
+      try {
+        const res = await fetch('/api/subscriptions');
+        const list = await res.json();
+        
+        document.getElementById('subCount').innerText = list.length;
+        const subListDiv = document.getElementById('subList');
+        
+        if (list.length === 0) {
+          subListDiv.innerHTML = '<div class="text-center py-6 text-slate-500 text-xs">暂无正在运行的配置</div>';
+          document.getElementById('cacheStats').innerText = '已加载 0 个城市监控';
+          return;
+        }
+
+        const distinctCities = new Set(list.map(s => s.cityName));
+        document.getElementById('cacheStats').innerText = '已加载 ' + distinctCities.size + ' 个城市监控';
+
+        let listHtml = '';
+        list.forEach(sub => {
+          const displayServer = sub.barkServer || 'https://api.day.app';
+          listHtml += `
+            <div class="p-3 bg-white/[0.02] border border-white/5 rounded-xl flex justify-between items-center text-xs">
+              <div class="space-y-1">
+                <div class="flex items-center gap-1.5">
+                  <span class="px-2 py-0.5 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-bold rounded-md">${sub.cityName}</span>
+                  <span class="text-slate-400 font-mono">${sub.barkKey.substring(0,6)}...***</span>
+                </div>
+                <div class="text-[10px] text-slate-500 truncate max-w-[200px]">服务: ${displayServer.replace('https://','')}</div>
+              </div>
+              <button onclick="deleteSub('${sub.barkKey}')" class="p-1.5 hover:bg-rose-500/10 rounded-lg text-rose-400 transition">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+          `;
+        });
+        subListDiv.innerHTML = listHtml;
+        lucide.createIcons();
+      } catch (err) {
+        console.error('加载订阅列表错误:', err);
+      }
+    }
+
+    document.getElementById('subscribeForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const select = document.getElementById('cityCode');
+      const cityName = select.options[select.selectedIndex].text.split(' ')[0];
+      const data = {
+        barkServer: document.getElementById('barkServer').value.trim(),
+        barkKey: document.getElementById('barkKey').value.trim(),
+        cityCode: select.value,
+        cityName: cityName,
+        sound: document.getElementById('sound').value,
+        iconUrl: document.getElementById('iconUrl').value.trim()
+      };
+
+      try {
+        const res = await fetch('/api/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        const ret = await res.json();
+        if (ret.code === 1) {
+          showToast('气象监测配置保存成功，守护中...', true);
+          loadSubscriptions();
+        } else {
+          showToast('保存失败', false);
+        }
+      } catch (err) {
+        showToast('云端保存失败', false);
+      }
+    });
+
+    async function deleteSub(barkKey) {
+      if (!confirm('确认关闭此处的预警实时接收吗？')) return;
+      try {
+        const res = await fetch('/api/delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ barkKey })
+        });
+        const ret = await res.json();
+        if (ret.code === 1) {
+          showToast('已安全移除该监控节点', true);
+          loadSubscriptions();
+        } else {
+          showToast('删除失败', false);
+        }
+      } catch (err) {
+        showToast('删除出现异常', false);
+      }
+    }
+
+    // 初始化加载
+    renderAlerts(historicalAlerts);
+    loadSubscriptions();
+  </script>
+</body>
+</html>
